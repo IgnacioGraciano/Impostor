@@ -18,7 +18,7 @@ E.NG = (() => {
     const art = E.ART.side('B742', { p: '#c8573a', s: '#f3e3c0', livery: 'retro', logo: 'sol', name: 'Estela' });
     el.innerHTML = `<div class="title-bg" style="background:radial-gradient(ellipse at 70% 20%, rgba(243,182,74,.16), transparent 55%), radial-gradient(ellipse at 10% 90%, rgba(124,196,255,.12), transparent 50%), var(--bg)"></div>
       <div class="title-inner">
-        <div class="row sp"><span class="tiny up muted" style="letter-spacing:.3em">Simulador de aerolíneas · 1970 – 2030</span><span class="tiny muted mono">v1.0</span></div>
+        <div class="row sp"><span class="tiny up muted" style="letter-spacing:.3em">Simulador de aerolíneas · <span style="white-space:nowrap">1970 – 2030</span></span><span class="tiny muted mono">v1.0</span></div>
         <div class="logo-big">Est<em>e</em>la</div>
         <div class="tagline">Fundá tu aerolínea, elegí cada avión, trazá rutas por el mundo y sobreviví a cinco décadas de crisis del petróleo, guerras de precios y tormentas.</div>
         <div style="max-width:620px;margin:26px 0 0 -10px;height:150px;animation:floaty 6s ease-in-out infinite">${art}</div>
