@@ -116,6 +116,7 @@
         <div class="row sp tiny muted"><span>${U.money(min)}</span><span>${U.pct(r.price[k] / ref[k])} de la referencia</span><span>${U.money(max)}</span></div></div>`;
     });
     if (d.cap.c > 0) h += `<div class="card mt8"><div class="row sp"><b>Carga</b><span class="mono">${U.n2(E.D.cargoRate(G, r.d) * (r.cargoP || 1))} $/t·km</span></div><div class="slider-row mt8"><span class="small">Tarifa relativa</span><span class="val">${U.pct(r.cargoP || 1)}</span>${UI.range('cargoP', 0.6, 1.6, 0.05, r.cargoP || 1, `data-id="${r.id}"`)}</div></div>`;
+    h += `<div class="item mt12"><div class="grow"><div class="t">Tarifas estacionales</div><div class="s">Sube los precios en temporada alta y los baja en la baja (hoy ${seasonNow >= 1 ? '+' : ''}${U.pct((seasonNow - 1) * 0.8)}).</div></div>${UI.toggle('seasonal', r.seasonal, `data-id="${r.id}"`)}</div>`;
     const canAuto = G.research.done.yield || G.research.done.dyn;
     h += `<div class="item mt12"><div class="grow"><div class="t">Precios automáticos</div><div class="s">${canAuto ? 'El sistema de yield ajusta cada semana según la ocupación.' : 'Requiere investigar Yield management.'}</div></div>${canAuto ? UI.toggle('autoPrice', r.auto, `data-id="${r.id}"`) : UI.icon('lock')}</div>`;
     h += `<div class="btns mt12"><button class="btn sm" data-a="priceRef" data-v="${r.id}">Volver a la referencia</button><button class="btn sm" data-a="priceAll" data-v="${r.id}" data-k="0.9">−10% todas</button><button class="btn sm" data-a="priceAll" data-v="${r.id}" data-k="1.1">+10% todas</button></div>`;
@@ -132,6 +133,7 @@
     }
   };
   E.IN.cargoP = (el, type) => { const r = E.G.routes.find(x => x.id === el.dataset.id); el.parentElement.querySelector('.val').textContent = U.pct(+el.value); if (type === 'change') { r.cargoP = +el.value; E.D.routeDemand(E.G, r); } };
+  E.IN.seasonal = (el) => { const r = E.G.routes.find(x => x.id === el.dataset.id); r.seasonal = el.checked; E.D.routeDemand(E.G, r); };
   E.IN.autoPrice = (el) => { const r = E.G.routes.find(x => x.id === el.dataset.id); r.auto = el.checked; };
   E.A.priceRef = (d) => { const G = E.G; const r = G.routes.find(x => x.id === d.v); const ref = E.D.refN(G, r.d, r.a, r.b); ['y', 'p', 'j', 'f'].forEach(k => r.price[k] = Math.round(ref[k])); E.D.routeDemand(G, r); UI.render(); };
   E.A.priceAll = (d) => { const G = E.G; const r = G.routes.find(x => x.id === d.v); ['y', 'p', 'j', 'f'].forEach(k => r.price[k] = Math.round(r.price[k] * +d.k)); E.D.routeDemand(G, r); UI.render(); };

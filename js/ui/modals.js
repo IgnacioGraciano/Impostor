@@ -160,5 +160,36 @@ E.MOD = (() => {
       <div class="r mt16"><button class="btn primary" data-a="mClose">Seguir jugando</button></div>`);
   };
   E.bus.on('won', () => setTimeout(M.victory, 400));
+
+  /* ---------- informe anual ---------- */
+  M.pendingYear = null;
+  E.bus.on('year', (y) => { M.pendingYear = y; });
+  M.yearReport = () => {
+    const G = E.G, y = M.pendingYear; M.pendingYear = null;
+    const months = G.fin.hist.filter(m => U.year(m.t) === y);
+    const prev = G.fin.hist.filter(m => U.year(m.t) === y - 1);
+    if (!months.length) return;
+    const sum = (list, f) => list.reduce((s, m) => s + f(m), 0);
+    const rev = sum(months, m => E.EC.total(m.rev)), prof = sum(months, m => E.EC.profitOf(m)), pax = sum(months, m => m.pax);
+    const seats = sum(months, m => m.seats), fl = sum(months, m => m.fl), ont = sum(months, m => m.ontime);
+    const prevRev = sum(prev, m => E.EC.total(m.rev)), prevPax = sum(prev, m => m.pax), prevProf = sum(prev, m => E.EC.profitOf(m));
+    const delta = (a, b) => b ? `<span class="${a >= b ? 'good' : 'bad'}">${a >= b ? '▲' : '▼'} ${U.pct(Math.abs(a / b - 1), 1)}</span>` : '';
+    const rr = G.routes.map(r => ({ r, p: r.stats.hist.slice(-26).reduce((s, w) => s + w.rev - w.cost, 0) })).sort((a, b) => b.p - a.p);
+    const ach = E.ACH.filter(a => G.stats.ach[a.id] && U.year(G.stats.ach[a.id]) === y);
+    if (G.settings.pauseEvents && G.speed) { M.resumeSpeed = G.speed; E.A.speed({ v: 0 }); }
+    UI.modal(`<div class="mast"><span>Memoria y balance</span><b>${U.esc(G.airline.name)}</b><span>Ejercicio ${y}</span></div>
+      <div class="kick">Informe anual</div><h2>${prof >= 0 ? 'Un año en verde' : 'Un año para olvidar'}: ${U.money(prof)} de ${prof >= 0 ? 'ganancia' : 'pérdida'}</h2>
+      <div class="grid2" style="font-family:var(--font)">
+        <div><div class="tiny up">Ingresos</div><div class="mono" style="font-size:20px;font-weight:800">${U.money(rev)}</div><div class="small">${delta(rev, prevRev)}</div></div>
+        <div><div class="tiny up">Resultado</div><div class="mono" style="font-size:20px;font-weight:800">${U.money(prof)}</div><div class="small">${prevProf ? 'anterior ' + U.money(prevProf) : ''}</div></div>
+        <div><div class="tiny up">Pasajeros</div><div class="mono" style="font-size:20px;font-weight:800">${U.n0(pax)}</div><div class="small">${delta(pax, prevPax)}</div></div>
+        <div><div class="tiny up">Ocupación · puntualidad</div><div class="mono" style="font-size:20px;font-weight:800">${U.pct(seats ? pax / seats : 0)} · ${U.pct(fl ? ont / fl : 0)}</div></div>
+        <div><div class="tiny up">Flota</div><div class="mono" style="font-size:20px;font-weight:800">${G.fleet.length}</div></div>
+        <div><div class="tiny up">Reputación</div><div class="mono" style="font-size:20px;font-weight:800">${Math.round(G.rep.overall)}/100</div></div>
+      </div>
+      ${rr.length ? `<p style="font-size:15px;margin-top:14px"><b>Ruta estrella:</b> ${rr[0].r.a}–${rr[0].r.b} (${U.money(rr[0].p)} en el semestre).${rr.length > 1 && rr[rr.length - 1].p < 0 ? ` <b>La que más pierde:</b> ${rr[rr.length - 1].r.a}–${rr[rr.length - 1].r.b} (${U.money(rr[rr.length - 1].p)}).` : ''}</p>` : ''}
+      ${ach.length ? `<p style="font-size:15px"><b>Logros del año:</b> ${ach.map(a => a.n).join(', ')}.</p>` : ''}
+      <div class="r mt12"><button class="btn" data-a="mClose">Seguir</button></div>`, { cls: 'paper', onClose: () => { if (M.resumeSpeed) { E.A.speed({ v: M.resumeSpeed }); M.resumeSpeed = 0; } } });
+  };
   return M;
 })();

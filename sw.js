@@ -1,5 +1,5 @@
 /* ESTELA · service worker: funciona sin conexión una vez cargado */
-const CACHE = 'estela-v1';
+const CACHE = 'estela-v2';
 const FILES = ['./', 'index.html', 'css/style.css', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png',
   'js/core/util.js', 'js/data/world.js', 'js/data/airports.js', 'js/data/aircraft.js', 'js/data/research.js', 'js/data/events.js', 'js/data/scenarios.js',
   'js/core/geo.js', 'js/core/state.js', 'js/sim/economy.js', 'js/sim/demand.js', 'js/sim/fleet.js', 'js/sim/weather.js', 'js/sim/flights.js', 'js/sim/staff.js',

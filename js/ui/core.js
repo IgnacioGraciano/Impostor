@@ -158,7 +158,7 @@ E.UI = (() => {
     el.innerHTML = (icon ? UI.icon(icon) : '') + `<span>${msg}</span>`;
     UI.$('#toasts').appendChild(el);
     setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 320); }, kind === 'bad' ? 4200 : 3000);
-    const all = UI.$$('#toasts .toast'); if (all.length > 3) all[0].remove();
+    const all = UI.$$('#toasts .toast'); if (all.length > 2) all[0].remove();
   };
 
   /* ---------- modales ---------- */
@@ -273,6 +273,7 @@ E.UI = (() => {
     const fn = E.IN[el.dataset.in];
     if (fn) try { fn(el, ev.type, ev); } catch (e) { console.error(e); }
   };
+  document.addEventListener('scroll', (e) => { if (e.target && e.target.closest && e.target.closest('#sheet')) UI.interacting = Date.now() - 1200; }, true);
   document.addEventListener('input', onInput);
   document.addEventListener('change', onInput);
   document.addEventListener('keydown', ev => {

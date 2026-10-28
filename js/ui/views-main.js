@@ -177,11 +177,29 @@
         ['used', 'tag', 'Mercado de segunda mano', `${G.used.length} aviones en venta`],
         ['inbox', 'inbox', 'Bandeja', `${G.inbox.filter(m => !m.read).length} sin leer`],
         ['goals', 'trophy', 'Objetivos y logros', `${Object.keys(G.stats.ach).length}/${E.ACH.length} logros`],
+        ['help', 'info', 'Guía del juego', 'Cómo funciona la demanda, las frecuencias, el clima y más'],
         ['settings', 'gear', 'Ajustes y partidas', 'Guardar, tema, nivel de simulación']
       ];
       return `<div class="list">${items.map(([v, i, t, s]) => `<button class="item" data-a="open" data-v="${v}">${UI.icon(i)}<div class="grow"><div class="t">${t}</div><div class="s">${s}</div></div><span class="chev">${UI.icon('chev')}</span></button>`).join('')}</div>`;
     }
   };
+
+  /* ---------- Guía ---------- */
+  const HELP = [
+    ['Primeros pasos', 'Conseguí aviones en <b>Flota → Comprar o alquilar</b> (o en el mercado de usados), creá una ruta desde una de tus bases y asigná el avión con una frecuencia semanal. Después acelerá el tiempo con los controles de arriba. El mapa muestra cada vuelo en tiempo real: tocá un avión o un aeropuerto para ver detalles.'],
+    ['Demanda y competencia', 'Cada par de ciudades tiene una demanda diaria según población, negocios, turismo, distancia, época y estación. Te la repartís con competidores según precio, calidad, reputación, notoriedad de marca y capacidad ofrecida. Si llenás siempre los aviones con precios altos, aparecerán rivales.'],
+    ['Frecuencias y puntualidad', 'Más frecuencias = más pasajeros captados, pero menos ocupación y menos colchón entre rotaciones: una demora se propaga al resto del día. Con puntualidad menor al 80%, los pasajeros de ejecutiva (los más rentables) se van a la competencia.'],
+    ['Tarifas', 'La tarifa de referencia es el precio medio del mercado. Turistas son muy sensibles al precio; ejecutivos mucho menos. Con ocupación del 100% probablemente estés cobrando poco. El yield management habilita precios automáticos; las tarifas estacionales siguen la temporada.'],
+    ['Cabina y servicio', 'Cada avión tiene un espacio fijo: elegís cuántos asientos de cada clase y qué producto (de butaca reclinable a suite). El catering, el entretenimiento y el Wi-Fi suman calidad, sobre todo en vuelos largos. Las expectativas cambian con la época: una cama plana en 2020 es lo normal.'],
+    ['Modelo de negocio', 'Low-cost: densidad alta, extras pagos y precios bajos que estimulan la demanda turística, pero los ejecutivos te evitan. Tradicional: servicio incluido, ejecutiva y conexiones. Podés mezclar a gusto con los cargos de equipaje.'],
+    ['Mantenimiento', 'Los chequeos A, C y D mantienen el estado del avión. Un avión gastado consume más, falla más y es más peligroso. La política "diferida" ahorra hoy pero aumenta el riesgo y las sanciones del regulador. Los hangares propios y la investigación abaratan el mantenimiento.'],
+    ['Personal', 'Pilotos, tripulantes, mecánicos y personal de tierra se calculan según tus horas de vuelo. Con dotación escasa sube la fatiga (más incidentes) y hay cancelaciones; con moral baja llegan las huelgas. Contratá con experiencia (inmediato, caro) o formá cadetes (barato, lento).'],
+    ['Clima, ATC y ETOPS', 'Tormentas, ciclones, nieve, niebla y viento cruzado provocan demoras, esperas y desvíos al alternativo. Para aterrizar con niebla necesitás autoland CAT III e investigación. La corriente en chorro acelera los vuelos hacia el este. Los bimotores que se alejan de aeropuertos alternativos necesitan kit y certificación ETOPS.'],
+    ['Emergencias', 'En modo Realista tomás la cabina: seguí la lista de chequeo en orden, rápido, y elegí bien dónde aterrizar. En Simplificado decide la tripulación según su entrenamiento (simuladores y CRM ayudan).'],
+    ['Finanzas', 'Préstamos según tu calificación crediticia, coberturas de combustible, seguros, impuestos trimestrales y salida a bolsa. Si la caja queda negativa 60 días, quebrás. En escenarios con inflación, indexá tarifas y salarios.'],
+    ['Atajos', 'Espacio: pausa/reanudar · 1-4: velocidades · Esc: volver. En el mapa: arrastrar para mover, pellizcar o rueda para zoom, doble toque para acercar.']
+  ];
+  E.V.help = { title: 'Guía del juego', render() { return HELP.map(([t, d]) => `<div class="card mt8"><b>${t}</b><p class="small muted" style="margin:6px 0 0">${d}</p></div>`).join(''); } };
 
   /* ---------- Objetivos y logros ---------- */
   E.V.goals = {
@@ -214,7 +232,7 @@
       h += UI.sec('Partida');
       const saves = E.SAVE.list();
       h += `<div class="list">${['1', '2', '3'].map(s => { const m = saves.find(x => x.slot === s); return `<div class="item"><div class="grow"><div class="t">Ranura ${s}</div><div class="s">${m ? `${U.esc(m.name)} · ${m.date}` : 'Vacía'}</div></div><button class="btn sm" data-a="saveSlot" data-v="${s}">${UI.icon('save')}Guardar</button></div>`; }).join('')}</div>`;
-      h += `<div class="btns mt12"><button class="btn" data-a="exportSave">Exportar archivo</button><button class="btn" data-a="importSave">Importar archivo</button><button class="btn danger" data-a="quitTitle">Salir al menú</button></div>`;
+      h += `<div class="btns mt12"><button class="btn" data-a="exportSave">Exportar partida</button><button class="btn" data-a="importSave">Importar partida</button><button class="btn danger" data-a="quitTitle">Salir al menú</button></div>`;
       h += `<p class="tiny muted mt16">La partida se guarda automáticamente cada pocos minutos en este dispositivo. Estela · datos de mapa: Natural Earth.</p>`;
       return h;
     }
@@ -224,14 +242,20 @@
   E.A.setSim = (d) => { E.G.settings.sim = d.v; UI.render(); };
   E.A.saveSlot = (d) => { if (E.SAVE.save(E.G, d.v)) UI.toast('Partida guardada en la ranura ' + d.v, 'good', 'save'); UI.render(); };
   E.A.exportSave = () => {
-    const blob = new Blob([E.SAVE.exportText(E.G)], { type: 'application/json' });
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `estela-${E.G.airline.code}-${U.year(E.G.t)}.json`; a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    if (!E.framed) {
+      const blob = new Blob([E.SAVE.exportText(E.G)], { type: 'application/json' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `estela-${E.G.airline.code}-${U.year(E.G.t)}.json`; a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      return;
+    }
+    const m = UI.modal(`<h2>Exportar partida</h2><p>Copiá este texto y guardalo donde quieras (notas, correo). Para recuperarla usá «Importar» y pegalo.</p><textarea id="expTxt" class="input mono" style="min-height:160px;padding:10px;font-size:11px" readonly>${U.esc(E.SAVE.exportText(E.G))}</textarea><div class="btns mt12" style="justify-content:flex-end"><button class="btn ghost" data-a="mClose">Cerrar</button><button class="btn primary" id="expCopy">Copiar</button></div>`);
+    m.box.querySelector('#expCopy').onclick = () => { const ta = m.box.querySelector('#expTxt'); const ok = () => UI.toast('Partida copiada', 'good'); try { navigator.clipboard.writeText(ta.value).then(ok, () => { ta.select(); UI.toast('Seleccioné el texto: copialo manualmente'); }); } catch (e) { ta.select(); } };
   };
   E.A.importSave = () => {
-    const inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.json,application/json';
-    inp.onchange = () => { const f = inp.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { try { const G = E.SAVE.importText(r.result); E.startGame(G); UI.toast('Partida importada', 'good'); } catch (e) { UI.toast('Archivo inválido', 'bad'); } }; r.readAsText(f); };
-    inp.click();
+    const m = UI.modal(`<h2>Importar partida</h2><p>Pegá el texto de una partida exportada o elegí un archivo .json.</p><textarea id="impTxt" class="input mono" style="min-height:140px;padding:10px;font-size:11px" placeholder='{"v":3,...}'></textarea><div class="row wrap mt12"><label class="btn sm" for="impFile">Elegir archivo</label><input type="file" id="impFile" accept=".json,application/json" class="hidden"></div><div class="btns mt12" style="justify-content:flex-end"><button class="btn ghost" data-a="mClose">Cancelar</button><button class="btn primary" id="impGo">Cargar</button></div>`);
+    const load = (txt) => { try { const G = E.SAVE.importText(txt); m.close(); E.startGame(G); UI.toast('Partida importada', 'good'); } catch (e) { UI.toast('El texto no es una partida válida', 'bad'); } };
+    m.box.querySelector('#impGo').onclick = () => load(m.box.querySelector('#impTxt').value);
+    m.box.querySelector('#impFile').onchange = (e) => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => load(r.result); r.readAsText(f); };
   };
   E.A.quitTitle = async () => { if (await UI.confirm('¿Salir al menú?', 'La partida se guarda automáticamente.', 'Salir')) { E.SAVE.save(E.G, 'auto'); E.toTitle(); } };
 })();

@@ -26,7 +26,7 @@ E.NG = (() => {
           ${last ? `<button class="btn primary" data-a="ngContinue" data-v="${last.slot}">${UI.icon('play')}Continuar · ${U.esc(last.name)} <span class="muted" style="margin-left:auto;font-weight:500">${last.date}</span></button>` : ''}
           <button class="btn ${last ? '' : 'primary'}" data-a="ngStart">${UI.icon('plus')}Nueva aerolínea</button>
           ${saves.length > 1 ? `<button class="btn" data-a="ngSaves">${UI.icon('save')}Cargar partida</button>` : ''}
-          <button class="btn ghost" data-a="ngImport">${UI.icon('inbox')}Importar archivo</button>
+          <button class="btn ghost" data-a="ngImport">${UI.icon('inbox')}Importar partida</button>
         </div>
         <div class="saves" id="ngSaves"></div>
         <p class="tiny muted" style="margin-top:auto;padding-top:30px">Jugable en celular y computadora. Datos de mapa: Natural Earth. Aviones y aeropuertos reales; aerolíneas competidoras ficticias.</p>

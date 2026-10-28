@@ -137,7 +137,8 @@ E.FL = (() => {
     anc *= ancK;
     // pasajes
     const yieldK = 0.95 * (G.research.done.yield ? 1.04 : 1) * (G.research.done.dyn ? 1.05 : 1);
-    const ticket = (pax.y * r.price.y + pax.p * r.price.p + pax.j * r.price.j + pax.f * r.price.f) * yieldK;
+    const sk = r.seasonal ? 1 + (E.D.season(O, Dd, U.month(G.t)) - 1) * 0.8 : 1;
+    const ticket = (pax.y * r.price.y + pax.p * r.price.p + pax.j * r.price.j + pax.f * r.price.f) * yieldK * sk;
     const distr = ticket * (G.research.done.web ? 0.035 : G.research.done.gds ? 0.085 : 0.07);
     const cargoRev = cargo * r.d * E.D.cargoRate(G, r.d) * (r.cargoP || 1);
     // mantenimiento por hora de bloque
@@ -360,6 +361,8 @@ E.FL = (() => {
     }
     ac.fl = null;
     ac.loc = f.d;
+    // combustible quemado en circuitos de espera
+    if (f.hold > 0.05 && !f.ferry) { const t = E.AC[ac.type]; E.X.cash(G, -f.hold * t.burn * t.spd * 0.55 * E.EC.fuelPrice(G, f.d), 'fuel'); }
     // registro de puntualidad
     if (!f.ferry && r) {
       const arrDelay = Math.max(0, (G.t - (f.sd + f.blk)) * 60);

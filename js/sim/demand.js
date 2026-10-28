@@ -206,7 +206,7 @@ E.D = (() => {
       ['y', 'p', 'j', 'f'].forEach(k => {
         const mkt = base * sp[k] * conn * (k === 'j' || k === 'f' ? E.X.modMult(G, 'demandJ', {}) * (res.ffp ? 1.1 : 1) * (alliance > 1 ? 1.06 : 1) : 1) * (k === 'p' && cap.p === 0 ? 0 : 1);
         if (k === 'f' && cap.f === 0) { out.mkt[k] += mkt; return; }
-        const p = r.price[k] / Math.max(1, ref[k]);
+        const p = r.price[k] * (r.seasonal ? 1 + (D.season(O, X, mo) - 1) * 0.8 : 1) / Math.max(1, ref[k]);
         // estímulo de la demanda total por precio
         const eps = { y: 1.9, p: 1.5, j: 1.2, f: 1.0 }[k];
         const stim = { y: 0.75 + lowcost * 0.5, p: 0.5, j: 0.35, f: 0.25 }[k];

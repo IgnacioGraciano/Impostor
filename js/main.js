@@ -20,7 +20,7 @@
   /* ---------- tema ---------- */
   E.applyTheme = (th) => {
     E.themeNow = th;
-    if (th === 'light') document.documentElement.dataset.theme = 'light'; else delete document.documentElement.dataset.theme;
+    if (th === 'light') document.documentElement.dataset.skin = 'light'; else delete document.documentElement.dataset.skin;
     E.MAP.setTheme(th);
     const m = document.querySelector('meta[name=theme-color]'); if (m) m.content = th === 'light' ? '#e9e1cf' : '#070c16';
     try { localStorage.setItem('estela.theme', th); } catch (e) { }
@@ -30,6 +30,7 @@
   E.startGame = (G, isNew) => {
     E.SAVE.migrate(G);
     E.G = G;
+    if (isNew && E.themeNow) G.settings.theme = E.themeNow;
     E.UIS.cab = {};
     E.ST.required(G);
     G.routes.forEach(r => E.D.routeDemand(G, r));
@@ -89,13 +90,14 @@
           try { E.ENG.advance(G, dt * E.SPEEDS[G.speed]); } catch (e) { console.error(e); G.speed = 0; E.HUD.speedUI(); UI.toast('Error de simulación: ' + e.message, 'bad'); }
         }
         if (G.ev.queue.length && !UI.modals.length) E.MOD.nextEvent();
+        else if (E.MOD.pendingYear && !UI.modals.length && !E.CK.active()) E.MOD.yearReport();
         if (G.ev.emq && G.ev.emq.length && !E.CK.active() && !UI.modals.length) E.CK.checkQueue();
       }
       if (G.over && !overShown) { overShown = true; E.SAVE.remove('auto'); E.MOD.gameOver(); }
       if (!G.over) overShown = false;
       E.HUD.follow();
       if (now - hudT > 200) { hudT = now; E.HUD.update(); }
-      if (now - refT > 1400) { refT = now; UI.refresh(); }
+      if (now - refT > 2500) { refT = now; UI.refresh(); }
       if (now - saveT > 90000 && !G.over) { saveT = now; E.SAVE.save(G, 'auto'); }
     }
     E.MAP.render(G, now);
@@ -105,14 +107,27 @@
   /* ---------- arranque ---------- */
   const boot = () => {
     E.MAP.init(UI.$('#map'));
-    let th = 'dark'; try { th = localStorage.getItem('estela.theme') || 'dark'; } catch (e) { }
+    // sin preferencia guardada, sigue el tema del sistema o del visor
+    const host = document.documentElement.dataset.theme;
+    let th = host === 'light' || (!host && window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
+    try { th = localStorage.getItem('estela.theme') || th; } catch (e) { }
     E.applyTheme(th);
     E.NG.title();
     requestAnimationFrame(frame);
     document.addEventListener('visibilitychange', () => { if (document.hidden && E.G && !E.G.over) E.SAVE.save(E.G, 'auto'); });
     window.addEventListener('pagehide', () => { if (E.G && !E.G.over) E.SAVE.save(E.G, 'auto'); });
     window.addEventListener('resize', U.debounce(() => { if (E.G) { E.HUD.build(); UI.refresh(true); } }, 300));
-    if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('sw.js').catch(() => { });
+    let framed = true; try { framed = window.self !== window.top; } catch (e) { }
+    E.framed = framed;
+    if (!framed && 'serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('sw.js').catch(() => { });
   };
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  // conserva la partida si la página se actualiza mientras está abierta
+  const hot = window.claude && window.claude.hot;
+  if (hot && hot.snapshot) { try { hot.snapshot(() => (E.G && !E.G.over ? { save: E.SAVE.exportText(E.G) } : {})); } catch (e) { } }
+  const start = (data) => {
+    boot();
+    if (data && data.save) { try { E.startGame(E.SAVE.importText(data.save)); } catch (e) { } }
+  };
+  const go = () => { if (hot && hot.ready) hot.ready(start); else start((hot && hot.data) || {}); };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();
 })();

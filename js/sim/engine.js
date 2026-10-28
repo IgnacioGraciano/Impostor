@@ -133,6 +133,7 @@ E.ENG = (() => {
       else if (scn.deadline && U.yearF(G.t) >= scn.deadline && !G.flags.deadlineMsg) { G.flags.deadlineMsg = true; E.X.inbox(G, 'Plazo cumplido', 'Llegó la fecha límite del escenario sin completar todos los objetivos. Podés seguir jugando en modo libre.', 'warn'); }
     }
     E.bus.emit('month', G);
+    if (U.month(G.t) === 0 && G.fin.hist.length >= 3) E.bus.emit('year', U.year(G.t) - 1);
   };
 
   ENG.research = (G) => {

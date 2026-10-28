@@ -29,7 +29,14 @@ E.ART = (() => {
   const ENGL = { rp: 3.2, rj: 3.2, nb: 3.9, wb: 5.6, jb: 5.4, ss: 6.5, fr: 5.6 };
   const BIG = { B772: 3.5, B77L: 3.5, B77W: 3.6, B779: 3.8, B77F: 3.5, A388: 3.1, B788: 3.0, B789: 3.0, B78X: 3.0, A359: 3.1, A35K: 3.2, A35F: 3.2, A339: 3.0, B38M: 2.1, A20N: 2.2, A21N: 2.2, A21X: 2.2, B3XM: 2.1, B732: 1.35, B721: 1.4, B722: 1.4, DC93: 1.4, MD82: 1.55, MD90: 1.7, B712: 1.6, BA11: 1.4, F28: 1.3, F100: 1.4, F70: 1.4 };
 
+  const memo = new Map();
   A.side = (typeId, al, o = {}) => {
+    const key = typeId + '|' + al.p + al.s + al.livery + al.logo + al.name + '|' + (o.gear === false ? 0 : 1) + (o.shadow === false ? 0 : 1);
+    let svg = memo.get(key);
+    if (!svg) { svg = A.sideRaw(typeId, al, o); memo.set(key, svg); if (memo.size > 400) memo.delete(memo.keys().next().value); }
+    return svg;
+  };
+  A.sideRaw = (typeId, al, o = {}) => {
     const t = E.AC[typeId];
     const id = 'p' + (++uid);
     const L = 1000, s = L / t.len; // unidades por metro
