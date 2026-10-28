@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#070c16">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="Estela: simulador de gestión de aerolíneas. Fundá tu compañía, comprá aviones, diseñá rutas y sobreviví a cinco décadas de historia de la aviación.">
+<title>Estela · Gestión de aerolíneas</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app" class="hidden">
+  <div id="mapwrap"><canvas id="map" aria-label="Mapa de operaciones"></canvas></div>
+  <header id="hud"></header>
+  <nav id="nav" aria-label="Secciones"></nav>
+  <div id="mapctl"></div>
+  <div id="ticker" aria-live="polite"></div>
+  <div id="fcard" class="fcard hidden"></div>
+  <aside id="sheet" class="sheet" aria-hidden="true">
+    <div class="sheet-grab" data-a="sheetGrab"><span></span></div>
+    <div class="sheet-head"></div>
+    <div class="sheet-body"></div>
+  </aside>
+</div>
+<div id="title" class="title"></div>
+<div id="modals"></div>
+<div id="toasts"></div>
+
+<script src="js/core/util.js"></script>
+<script src="js/data/world.js"></script>
+<script src="js/data/airports.js"></script>
+<script src="js/data/aircraft.js"></script>
+<script src="js/data/research.js"></script>
+<script src="js/data/events.js"></script>
+<script src="js/data/scenarios.js"></script>
+<script src="js/core/geo.js"></script>
+<script src="js/core/state.js"></script>
+<script src="js/sim/economy.js"></script>
+<script src="js/sim/demand.js"></script>
+<script src="js/sim/fleet.js"></script>
+<script src="js/sim/weather.js"></script>
+<script src="js/sim/flights.js"></script>
+<script src="js/sim/staff.js"></script>
+<script src="js/sim/events.js"></script>
+<script src="js/sim/engine.js"></script>
+<script src="js/render/planeart.js"></script>
+<script src="js/render/map.js"></script>
+<script src="js/ui/core.js"></script>
+<script src="js/ui/hud.js"></script>
+<script src="js/ui/views-main.js"></script>
+<script src="js/ui/views-fleet.js"></script>
+<script src="js/ui/views-routes.js"></script>
+<script src="js/ui/views-ops.js"></script>
+<script src="js/ui/views-company.js"></script>
+<script src="js/ui/modals.js"></script>
+<script src="js/ui/cockpit.js"></script>
+<script src="js/ui/newgame.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

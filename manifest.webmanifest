@@ -1,0 +1,17 @@
+{
+  "name": "Estela · Gestión de aerolíneas",
+  "short_name": "Estela",
+  "description": "Simulador de gestión de aerolíneas: flota, rutas, finanzas y cinco décadas de historia de la aviación.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#070c16",
+  "theme_color": "#070c16",
+  "lang": "es",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
