@@ -73,6 +73,8 @@
   E.bus.on('achievement', (a) => { E.SND.good(); UI.toast(`<b>Logro desbloqueado:</b> ${a.n}`, 'good', 'trophy'); });
   E.bus.on('research', (r) => { E.SND.good(); });
   E.bus.on('month', () => { if (E.G) E.SAVE.save(E.G, 'auto'); });
+  let saveWarned = false;
+  E.bus.on('saveFail', () => { if (!saveWarned) { saveWarned = true; UI.toast('No se pudo guardar: el almacenamiento del navegador está lleno. Exportá la partida desde Ajustes.', 'bad', 'save'); } });
 
   /* ---------- bucle principal ---------- */
   let last = performance.now(), hudT = 0, refT = 0, saveT = performance.now(), overShown = false;

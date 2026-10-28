@@ -78,7 +78,7 @@ E.X = (() => {
     G.routes.forEach(r => { if (!r.dem) return; if (iata && r.a !== iata && r.b !== iata) return; ['y', 'p', 'j', 'f'].forEach(k => p += (r.dem[k][0] + r.dem[k][1])); });
     return p;
   };
-  X.scale = (G) => Math.max(2e6 * G.econ.cpi, E.EC.revenue12(G) / 12);
+  X.scale = (G) => Math.max(0.6e6 * G.econ.cpi, E.EC.revenue12(G) / 12);
   X.routeCountries = (G) => [...new Set(G.routes.flatMap(r => [E.AP[r.a].cc, E.AP[r.b].cc]))];
   X.ground = (G, ac, days, why) => { if (ac.status === 'delivery') return; ac.status = 'grounded'; ac.why = why; ac.until = Math.max(ac.until || 0, G.t + days * 24); };
   X.myCompetitors = (G) => [...new Set(G.routes.flatMap(r => (G.markets[r.key] ? G.markets[r.key].comps.map(c => c.name) : [])))];
@@ -172,7 +172,7 @@ E.EV = (() => {
     id: 'accident', build: (G, a) => ({
       icon: 'alert', title: a.survivable ? 'Accidente en aterrizaje' : 'Accidente grave', kicker: 'Crisis', text: a.txt + ' La prensa espera tu declaración.',
       choices: [
-        { t: 'Transparencia total y asistencia a familias', d: 'Costoso, pero protege la imagen a largo plazo', fx: G => { E.X.cash(G, -4e6 * G.econ.cpi, 'comp'); E.X.rep(G, 'image', 8); return 'Tu respuesta fue elogiada por la prensa y las autoridades.'; } },
+        { t: 'Transparencia total y asistencia a familias', d: 'Costoso, pero protege la imagen a largo plazo', fx: G => { E.X.cash(G, -Math.max(1e6 * G.econ.cpi, E.X.scale(G) * 0.12), 'comp'); E.X.rep(G, 'image', 8); return 'Tu respuesta fue elogiada por la prensa y las autoridades.'; } },
         { t: 'Declaración legal mínima', d: 'Sin costo extra · la imagen sufre más', fx: G => { E.X.rep(G, 'image', -6); return 'La comunicación fue percibida como fría y defensiva.'; } },
         { t: 'Inmovilizar la flota del tipo para revisión', d: 'Seguridad +, 3 días sin esos aviones', fx: G => { E.X.rep(G, 'safety', 6); E.X.rep(G, 'image', 4); G.fleet.forEach(x => { if (x.status === 'active') E.X.ground(G, x, 3, 'Revisión tras accidente'); }); return 'La revisión preventiva fue bien recibida.'; } }
       ]

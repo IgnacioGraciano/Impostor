@@ -23,10 +23,10 @@ E.ST = (() => {
       const s = E.F.seats(ac);
       const cc = s.total < 20 ? 0 : Math.ceil(s.total / 50) + (s.j + s.f > 0 ? 1 : 0) + (blk > 8 ? 1 : 0);
       req.cabin += cc * wh / 19 * 1.12;
-      depDay += ac.freq * 2 / 7;
+      depDay += ac.freq * 2 / 7 * (0.8 + s.total / 150);
       paxDay += ac.freq * 2 / 7 * s.total * 0.8;
     });
-    req.ground = G.staff.ground && G.staff.ground.out ? 0 : depDay * 2.4 + paxDay / 220;
+    req.ground = G.staff.ground && G.staff.ground.out ? 0 : depDay + paxDay / 300;
     E.STAFF_KEYS.forEach(k => req[k] = Math.ceil(req[k]));
     G.req = req;
     return req;
@@ -36,7 +36,10 @@ E.ST = (() => {
     if (!req) return 1.2;
     return G.staff[cat].n / req;
   };
-  ST.salary = (G, cat) => E.STAFF_CATS[cat].sal * G.staff[cat].salary * G.staff[cat].cpiPaid;
+  // nivel salarial de mercado según la región de la base principal
+  ST.REGW = { NA: 1.0, EU: 0.92, OC: 0.95, ME: 0.85, AS: 0.68, SA: 0.58, AF: 0.55 };
+  ST.regW = (G) => ST.REGW[G.airline.region] || 1;
+  ST.salary = (G, cat) => E.STAFF_CATS[cat].sal * ST.regW(G) * G.staff[cat].salary * G.staff[cat].cpiPaid;
   ST.payroll = (G) => {
     let m = 0;
     E.STAFF_KEYS.forEach(k => {
@@ -48,7 +51,7 @@ E.ST = (() => {
     return m * E.X.modMult(G, 'payroll', {});
   };
   // con experiencia: disponibles de inmediato pero cuestan el doble; cadetes: baratos, tardan semanas en formarse
-  ST.hireCost = (G, cat, n, mode = 'exp') => E.STAFF_CATS[cat].hire * n * G.econ.cpi * (G.research.done.training ? 0.7 : 1) * (mode === 'exp' ? 2 : 0.8);
+  ST.hireCost = (G, cat, n, mode = 'exp') => E.STAFF_CATS[cat].hire * ST.regW(G) * n * G.econ.cpi * (G.research.done.training ? 0.7 : 1) * (mode === 'exp' ? 2 : 0.8);
   ST.hire = (G, cat, n, mode = 'exp') => {
     n = Math.max(0, Math.round(n)); if (!n) return 0;
     const c = ST.hireCost(G, cat, n, mode);

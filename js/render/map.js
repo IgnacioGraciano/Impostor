@@ -152,11 +152,12 @@ E.MAP = (() => {
     });
     if (!glow) glowSprite();
     ctx.globalCompositeOperation = 'lighter';
-    const s = U.clamp(cam.z * 0.5, 1.6, 9);
+    const s = U.clamp(1.4 + cam.z * 0.22, 1.6, 4.6);
+    const fade = U.clamp(1.25 - cam.z / 40, 0.45, 1);
     for (const [lon, py, a] of lights) {
       const [x, y] = toScreen(wrapX(lon), py);
       if (x < -10 || y < -10 || x > W + 10 || y > H + 10) continue;
-      ctx.globalAlpha = Math.min(1, a * (pal === PAL.light ? 0.5 : 0.85));
+      ctx.globalAlpha = Math.min(1, a * fade * (pal === PAL.light ? 0.5 : 0.85));
       ctx.drawImage(glow, x - s, y - s, s * 2, s * 2);
     }
     ctx.globalAlpha = 1;

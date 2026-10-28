@@ -24,7 +24,7 @@ E.newGame = (o) => {
   const G = {
     v: 3, t: t0, t0, speed: 0, lastDay: U.dayIdx(t0), lastMonth: null, ids: 0,
     scn: scn.id, diff: o.diff || 'normal',
-    settings: Object.assign({ sim: 'real', pauseEvents: true, sound: true, theme: 'dark', autoMaint: true, autoStaff: true, crises: true, hist: true, labels: true, indexPrices: true, indexWages: false }, o.settings || {}),
+    settings: Object.assign({ sim: 'real', pauseEvents: true, sound: true, theme: 'dark', autoMaint: true, autoStaff: true, crises: true, hist: true, labels: true, indexPrices: true, indexWages: false }, scn.settings || {}, o.settings || {}),
     airline: { name: o.name || 'Aerolínea', code: (o.code || 'XX').toUpperCase(), p: o.p || '#1f5fa8', s: o.s || '#f2a900', livery: o.livery || 'moderna', logo: o.logo || 'ala', home: home.iata, cc: home.cc, region: home.region, model: o.model || scn.model, founded: t0 },
     cash: 0,
     bases: {}, fleet: [], orders: [], used: [], routes: [], markets: {}, slots: {},
@@ -64,7 +64,7 @@ E.newGame = (o) => {
       G.fleet.push(ac);
     }
   });
-  (scn.loans || []).forEach(l => G.fin.loans.push(E.EC.makeLoan(G, l.amt, l.rate, l.months)));
+  (scn.loans || []).forEach(l => { const L = E.EC.makeLoan(G, l.amt, l.rate, l.months); if (G.econ.infl > 0) { L.idx = true; L.cpi = 1; L.label = 'Deuda en dólares'; } G.fin.loans.push(L); });
   // reputación especial
   if (scn.id === 'bankrupt89') Object.assign(G.rep, { punct: 58, safety: 58, service: 42, image: 34, bags: 62 });
   if (scn.id === 'gulf04') Object.assign(G.rep, { service: 66, image: 60 });
@@ -85,6 +85,7 @@ E.newGame = (o) => {
   E.EC.daily(G);
   G.lastMonth = U.year(G.t) * 12 + U.month(G.t);
   E.X.inbox(G, 'Bienvenida', `Bienvenido a ${G.airline.name}. Tu base principal es ${home.city} (${home.iata}). ${scn.desc}`, 'info');
+  if (G.econ.infl > 0) E.X.inbox(G, 'Cuidado con la inflación', `Los precios suben ${E.U.pct(G.econ.infl)} por mes. Tus tarifas y salarios se licúan si no los indexás: revisá Rutas → Tarifas y Personal, o activá la indexación automática en Ajustes.`, 'warn');
   return G;
 };
 
@@ -132,12 +133,12 @@ E.SAVE = {
   },
   save(G, slot = 'auto') {
     try {
-      const data = JSON.stringify(G, (k, v) => k[0] === '_' ? undefined : v);
+      const data = JSON.stringify(G, (k, v) => k[0] === '_' ? undefined : typeof v === 'number' && !Number.isInteger(v) ? Math.round(v * 1e4) / 1e4 : v);
       localStorage.setItem(this.key(slot), data);
       localStorage.setItem(this.key(slot) + '.meta', JSON.stringify({ name: G.airline.name, code: G.airline.code, date: E.U.fmtDate(G.t), real: Date.now(), cash: G.cash, fleet: G.fleet.length, p: G.airline.p, scn: E.SCN[G.scn] ? E.SCN[G.scn].n : '' }));
       localStorage.setItem('estela.last', slot);
       return true;
-    } catch (e) { console.warn('No se pudo guardar', e); return false; }
+    } catch (e) { console.warn('No se pudo guardar', e); E.bus.emit('saveFail', e); return false; }
   },
   load(slot) {
     try {

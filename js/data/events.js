@@ -98,7 +98,7 @@ E.CRISES = [
         text: `En una inspección de rutina del ${ac.reg} se detectó una fisura en un larguero. El fabricante no emitió alerta todavía. Tenés ${same.length} aviones del mismo tipo.`,
         choices: [
           { t: 'Inspeccionar toda la flota del tipo', d: `${same.length} aviones en tierra 2 días · ${E.U.money(same.length * 60000)}`, fx: G => { same.forEach(a => E.X.ground(G, a, 2, 'Inspección preventiva')); E.X.cash(G, -same.length * 60000, 'maint'); E.X.rep(G, 'safety', 4); return 'Inspección completa. La prensa destacó tu cultura de seguridad.'; } },
-          { t: 'Reparar solo el avión afectado', d: '1 avión en tierra 5 días', fx: G => { E.X.ground(G, ac, 5, 'Reparación estructural'); E.X.cash(G, -180000, 'maint'); E.X.mod(G, { k: 'incident', scope: { type: ac.type }, v: 1.6, days: 90, label: 'Riesgo estructural' }); return 'Se reparó el avión. Queda un riesgo latente en el resto de la flota.'; } },
+          { t: 'Reparar solo el avión afectado', d: '1 avión en tierra 5 días', fx: G => { E.X.ground(G, ac, 5, 'Reparación estructural'); E.X.cash(G, -E.AC[ac.type].price * 1e6 * 0.004 * G.econ.cpi, 'maint'); E.X.mod(G, { k: 'incident', scope: { type: ac.type }, v: 1.6, days: 90, label: 'Riesgo estructural' }); return 'Se reparó el avión. Queda un riesgo latente en el resto de la flota.'; } },
           { t: 'Seguir operando y monitorear', d: 'Sin costo · riesgo elevado', fx: G => { E.X.mod(G, { k: 'incident', scope: { type: ac.type }, v: 3.5, days: 120, label: 'Fisura sin reparar' }); E.X.rep(G, 'safety', -2); return 'Seguís volando. Ojalá no pase nada…'; } }
         ] };
     } },
@@ -110,7 +110,7 @@ E.CRISES = [
         choices: [
           { t: 'Compensar generosamente', d: `${E.U.money(bags * 180)} · equipaje e imagen protegidos`, fx: G => { E.X.cash(G, -bags * 180, 'comp'); E.X.rep(G, 'bags', -2); E.X.rep(G, 'image', 1); return 'Entregaste las valijas a domicilio con compensación. Respuesta ejemplar.'; } },
           { t: 'Compensación mínima legal', d: `${E.U.money(bags * 60)}`, fx: G => { E.X.cash(G, -bags * 60, 'comp'); E.X.rep(G, 'bags', -6); E.X.rep(G, 'service', -2); return 'Cumpliste con lo mínimo. Muchos pasajeros quedaron furiosos.'; } },
-          { t: 'Invertir en un sistema nuevo', d: `${E.U.money(4e6 + bags * 60)} · menos pérdidas para siempre`, fx: G => { E.X.cash(G, -(4e6 + bags * 60), 'other'); G.flags.bagSystem = true; E.X.rep(G, 'bags', 2); return 'Nuevo sistema RFID instalado: la tasa de equipajes perdidos bajará un 40%.'; } }
+          { t: 'Invertir en un sistema nuevo', d: `${E.U.money(E.X.scale(G) * 0.5 + bags * 60)} · menos pérdidas para siempre`, fx: G => { E.X.cash(G, -(E.X.scale(G) * 0.5 + bags * 60), 'other'); G.flags.bagSystem = true; E.X.rep(G, 'bags', 2); return 'Nuevo sistema RFID instalado: la tasa de equipajes perdidos bajará un 40%.'; } }
         ] };
     } },
   { id: 'union', w: 0, cd: 60, cond: G => false, // se dispara por moral baja (ver sim/staff.js)
@@ -128,12 +128,12 @@ E.CRISES = [
     build: G => ({ icon: 'phone', title: 'Video viral en un vuelo tuyo', kicker: 'Redes sociales',
       text: 'Un pasajero filmó una discusión con la tripulación por el equipaje de mano. El video suma 8 millones de reproducciones.',
       choices: [
-        { t: 'Disculpa pública y compensación', d: '$80 K · la imagen se recupera', fx: G => { E.X.cash(G, -80000, 'comp'); E.X.rep(G, 'image', -1); return 'Tu disculpa fue bien recibida.'; } },
-        { t: 'Campaña de relaciones públicas', d: '$600 K · imagen +', fx: G => { E.X.cash(G, -600000, 'mkt'); E.X.rep(G, 'image', 2); return 'Convertiste la crisis en oportunidad con una campaña simpática.'; } },
+        { t: 'Disculpa pública y compensación', d: E.U.money(Math.max(15000, E.X.scale(G) * 0.004)) + ' · la imagen se recupera', fx: G => { E.X.cash(G, -Math.max(15000, E.X.scale(G) * 0.004), 'comp'); E.X.rep(G, 'image', -1); return 'Tu disculpa fue bien recibida.'; } },
+        { t: 'Campaña de relaciones públicas', d: E.U.money(Math.max(60000, E.X.scale(G) * 0.03)) + ' · imagen +', fx: G => { E.X.cash(G, -Math.max(60000, E.X.scale(G) * 0.03), 'mkt'); E.X.rep(G, 'image', 2); return 'Convertiste la crisis en oportunidad con una campaña simpática.'; } },
         { t: 'No responder', d: 'Gratis · imagen −6', fx: G => { E.X.rep(G, 'image', -6); return 'El silencio fue interpretado como soberbia.'; } }
       ] }) },
   { id: 'lawsuit', w: 0.004, cd: 200, cond: G => G.rep.punct < 62 && E.X.paxDaily(G) > 500,
-    build: G => { const amt = Math.max(500000, E.X.scale(G) * 0.04);
+    build: G => { const amt = Math.max(100000, E.X.scale(G) * 0.05);
       return { icon: 'gavel', title: 'Demanda colectiva por demoras', kicker: 'Legal',
         text: `Una asociación de consumidores te demanda por la impuntualidad crónica (OTP ${E.U.pct(G.rep.otp)}). Reclaman ${E.U.money(amt)}.`,
         choices: [
@@ -147,7 +147,7 @@ E.CRISES = [
       choices: [
         { t: 'Contratar un proveedor premium de urgencia', d: 'Catering +30% por 3 meses', fx: G => { E.X.mod(G, { k: 'catering', v: 1.3, days: 90, label: 'Catering de emergencia' }); return 'El nuevo proveedor es caro pero excelente.'; } },
         { t: 'Servicio reducido 3 semanas', d: 'Servicio −', fx: G => { E.X.mod(G, { k: 'svcpen', v: 0.12, days: 21, label: 'Servicio reducido' }); return 'Durante tres semanas solo agua y galletitas.'; } },
-        { t: 'Comprar la empresa', d: '$6 M · catering −15% para siempre', fx: G => { E.X.cash(G, -6e6, 'other'); E.X.mod(G, { k: 'catering', v: 0.85, days: 99999, label: 'Catering propio' }); return 'Ahora tenés tu propia cocina de catering.'; } }
+        { t: 'Comprar la empresa', d: E.U.money(E.X.scale(G) * 0.3) + ' · catering −15% para siempre', fx: G => { E.X.cash(G, -E.X.scale(G) * 0.3, 'other'); E.X.mod(G, { k: 'catering', v: 0.85, days: 99999, label: 'Catering propio' }); return 'Ahora tenés tu propia cocina de catering.'; } }
       ] }) },
   { id: 'oem_offer', w: 0.007, cd: 150, cond: G => G.fleet.length >= 4,
     build: G => {
@@ -167,7 +167,7 @@ E.CRISES = [
         choices: [
           { t: 'Contratar a sus pilotos', d: '+8% pilotos a sueldo de mercado, sin costo de formación', fx: G => { E.X.removeCompetitor(G, c); const n = Math.max(4, Math.round(G.staff.pilots.n * 0.08)); G.staff.pilots.n += n; return `Se sumaron ${n} pilotos con experiencia.`; } },
           { t: 'Comprar aviones del remate', d: 'Aparecen aviones baratos en el mercado de usados', fx: G => { E.X.removeCompetitor(G, c); E.X.fireSale(G, c); return 'Hay nuevas ofertas en el mercado de segunda mano (−35%).'; } },
-          { t: 'Lanzar campaña para captar sus clientes', d: '$1,5 M · imagen y notoriedad +', fx: G => { E.X.removeCompetitor(G, c); E.X.cash(G, -1.5e6, 'mkt'); E.X.rep(G, 'image', 2); E.X.awareness(G, null, 6); return 'Captaste a muchos de sus pasajeros frecuentes.'; } }
+          { t: 'Lanzar campaña para captar sus clientes', d: E.U.money(E.X.scale(G) * 0.08) + ' · imagen y notoriedad +', fx: G => { E.X.removeCompetitor(G, c); E.X.cash(G, -E.X.scale(G) * 0.08, 'mkt'); E.X.rep(G, 'image', 2); E.X.awareness(G, null, 6); return 'Captaste a muchos de sus pasajeros frecuentes.'; } }
         ] };
     } },
   { id: 'subsidy', w: 0.004, cd: 360, cond: G => E.X.smallDomestic(G) != null,
@@ -192,7 +192,7 @@ E.CRISES = [
   { id: 'audit', w: 0.004, cd: 200, cond: G => G.fleet.length >= 3,
     build: G => { const bad = G.fleet.filter(a => a.status !== 'delivery' && (a.cond < 55 || E.X.overdue(G, a)));
       if (bad.length === 0) return { icon: 'shield', title: 'Auditoría de la autoridad aeronáutica', kicker: 'Regulador', text: 'Los inspectores revisaron registros de mantenimiento, entrenamiento y operaciones. Todo en regla.', choices: [{ t: 'Excelente', d: 'Seguridad +3', fx: G => { E.X.rep(G, 'safety', 3); return 'Certificación renovada sin observaciones.'; } }] };
-      const fine = 250000 + bad.length * 150000;
+      const fine = Math.round(Math.min(250000 + bad.length * 150000, E.X.scale(G) * 0.05 + bad.length * 80000));
       return { icon: 'shield', title: 'La auditoría encontró irregularidades', kicker: 'Regulador',
         text: `Los inspectores detectaron ${bad.length} aviones con mantenimiento vencido o en mal estado. Proponen una multa de ${E.U.money(fine)} y dejarlos en tierra.`,
         choices: [
@@ -205,7 +205,7 @@ E.CRISES = [
       return { icon: 'users', title: 'Paro de personal de rampa en ' + b, kicker: 'Aeropuerto',
         text: 'Los maleteros y agentes de rampa del aeropuerto paran 48 horas en reclamo al operador aeroportuario.',
         choices: [
-          { t: 'Contratar handling externo', d: '$350 K · operación casi normal', fx: G => { E.X.cash(G, -350000, 'airport'); E.X.mod(G, { k: 'delay', scope: { iata: b }, v: 20, days: 2, label: 'Paro de rampa' }); return 'Contrataste una empresa de handling temporal.'; } },
+          { t: 'Contratar handling externo', d: E.U.money(E.X.scale(G) * 0.015) + ' · operación casi normal', fx: G => { E.X.cash(G, -E.X.scale(G) * 0.015, 'airport'); E.X.mod(G, { k: 'delay', scope: { iata: b }, v: 20, days: 2, label: 'Paro de rampa' }); return 'Contrataste una empresa de handling temporal.'; } },
           { t: 'Aguantar', d: 'Demoras de 2-4 horas', fx: G => { E.X.mod(G, { k: 'delay', scope: { iata: b }, v: 150, days: 2, label: 'Paro de rampa' }); E.X.rep(G, 'bags', -3); return 'Dos días de caos en la terminal.'; } }
         ] };
     } },
@@ -250,7 +250,7 @@ E.CRISES = [
       text: 'Un pasajero se negó a bajar de un vuelo sobrevendido y la policía lo retiró a la fuerza. Las imágenes dan la vuelta al mundo.',
       choices: [
         { t: 'Eliminar la sobreventa', d: 'Sobreventa a 0% · imagen −2', fx: G => { G.svc.overbook = 0; E.X.rep(G, 'image', -2); return 'Prometiste no volver a sobrevender.'; } },
-        { t: 'Compensar y mantener la política', d: '$250 K · imagen −5', fx: G => { E.X.cash(G, -250000, 'comp'); E.X.rep(G, 'image', -5); return 'La política sigue. La imagen sufre.'; } }
+        { t: 'Compensar y mantener la política', d: E.U.money(Math.max(40000, E.X.scale(G) * 0.01)) + ' · imagen −5', fx: G => { E.X.cash(G, -Math.max(40000, E.X.scale(G) * 0.01), 'comp'); E.X.rep(G, 'image', -5); return 'La política sigue. La imagen sufre.'; } }
       ] }) },
   { id: 'fatigue', w: 0, cd: 90, cond: G => false, // disparado por fatiga alta
     build: G => ({ icon: 'moon', title: 'Pilotos denuncian fatiga extrema', kicker: 'Seguridad operacional',
@@ -274,7 +274,7 @@ E.CRISES = [
           { t: 'Absorber el costo', d: 'Mantener precios', fx: G => { E.X.mod(G, { k: 'fees', scope: { cc }, v: 1.25, days: 99999, label: 'Tasas ' + n }); return 'Absorbés el aumento.'; } }] };
     } },
   { id: 'sponsor', w: 0.004, cd: 365, cond: G => G.fleet.length >= 6,
-    build: G => { const cost = Math.round(E.X.scale(G) * 0.05 + 1e6);
+    build: G => { const cost = Math.round(E.X.scale(G) * 0.15 + 150000);
       return { icon: 'trophy', title: 'Propuesta de patrocinio deportivo', kicker: 'Marketing',
         text: `Un club de fútbol de primera división ofrece tu logo en la camiseta por un año a cambio de ${E.U.money(cost)}.`,
         choices: [
@@ -300,6 +300,13 @@ E.CRISES = [
           { t: 'Escalonar en 30 días', d: `${E.U.money(c)} · sin impacto operativo`, fx: G => { E.X.cash(G, -c, 'maint'); return 'Las inspecciones se hacen en las paradas nocturnas.'; } }
         ] };
     } },
+  { id: 'freeze', w: 0.012, cd: 160, cond: G => G.econ.infl > 0.03,
+    build: G => ({ icon: 'flag', title: 'El gobierno congela las tarifas', kicker: 'Economía',
+      text: 'Para frenar la inflación, el Ministerio de Economía prohíbe aumentar los precios de los pasajes durante 60 días. Los costos, en cambio, siguen subiendo.',
+      choices: [
+        { t: 'Acatar el congelamiento', d: 'Tarifas fijas 60 días', fx: G => { E.X.mod(G, { k: 'pricefreeze', v: 1, days: 60, label: 'Congelamiento de tarifas' }); return 'Las tarifas quedan congeladas por 60 días.'; } },
+        { t: 'Subir antes de que entre en vigor (+15%)', d: 'Imagen −4 · después, congelamiento', fx: G => { G.routes.forEach(r => ['y', 'p', 'j', 'f'].forEach(k => r.price[k] = Math.round(r.price[k] * 1.15))); E.X.rep(G, 'image', -4); E.X.mod(G, { k: 'pricefreeze', v: 1, days: 60, label: 'Congelamiento de tarifas' }); return 'Remarcaste a último momento. La prensa no te perdona.'; } }
+      ] }) },
   { id: 'furlough', w: 0, cd: 9999, cond: G => false,
     build: G => ({ icon: 'users', title: 'Pandemia: ¿qué hacemos con el personal?', kicker: 'Recursos humanos',
       text: 'Con la flota casi parada, la nómina se come la caja. El gobierno ofrece un programa de suspensiones con subsidio parcial.',

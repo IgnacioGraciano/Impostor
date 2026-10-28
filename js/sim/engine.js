@@ -78,7 +78,7 @@ E.ENG = (() => {
       const w = r.stats.w;
       w.t = G.t;
       r.stats.hist.push(w);
-      if (r.stats.hist.length > 52) r.stats.hist.shift();
+      if (r.stats.hist.length > 30) r.stats.hist.shift();
       r.stats.w = E.R.emptyWeek();
       if (r.auto && (G.research.done.yield || G.research.done.dyn) && r.dem) {
         const step = G.research.done.dyn ? 0.05 : 0.03;
@@ -91,7 +91,7 @@ E.ENG = (() => {
       }
     });
     // indexación de tarifas por inflación
-    if (G.econ.infl > 0 && G.settings.indexPrices) {
+    if (G.econ.infl > 0 && G.settings.indexPrices && !E.X.modMult(G, 'pricefreeze', {}, true)) {
       const k = G.econ.cpi / (G.econ.cpiPrices || 1);
       if (k > 1.005) { G.routes.forEach(r => ['y', 'p', 'j', 'f'].forEach(c => r.price[c] = Math.round(r.price[c] * k))); G.econ.cpiPrices = G.econ.cpi; }
     } else G.econ.cpiPrices = G.econ.cpi;

@@ -35,7 +35,7 @@
       return h;
     }
   };
-  E.IN.salary = (el, type) => { const s = E.G.staff[el.dataset.k]; el.parentElement.querySelector('.val').textContent = U.pct(+el.value) + ' · ' + U.money(E.STAFF_CATS[el.dataset.k].sal * +el.value * s.cpiPaid) + '/año'; if (type === 'change') { s.salary = +el.value; UI.render(); } };
+  E.IN.salary = (el, type) => { const s = E.G.staff[el.dataset.k]; el.parentElement.querySelector('.val').textContent = U.pct(+el.value) + ' · ' + U.money(E.STAFF_CATS[el.dataset.k].sal * E.ST.regW(E.G) * +el.value * s.cpiPaid) + '/año'; if (type === 'change') { s.salary = +el.value; UI.render(); } };
   E.A.tlevel = (d) => { const [k, v] = d.v.split(':'); E.G.staff[k].tlevel = +v; UI.render(); };
   E.A.hire = (d) => { const G = E.G; const c = E.ST.hire(G, d.k, +d.n, d.m); UI.toast(`${d.n} ${E.STAFF_CATS[d.k].n.toLowerCase()} ${d.m === 'exp' ? 'contratados' : 'en formación'} (${U.money(c)})`, 'good'); UI.render(); };
   E.A.hireReq = (d) => { const G = E.G; const req = E.ST.required(G)[d.k]; const need = Math.ceil(req * 1.03 - G.staff[d.k].n); if (need <= 0) return UI.toast('La dotación ya está cubierta'); const c = E.ST.hire(G, d.k, need, 'exp'); UI.toast(`Contrataste ${need} (${U.money(c)})`, 'good'); UI.render(); };

@@ -205,7 +205,7 @@ E.FL = (() => {
     const wo = E.W.at(G, o);
     if (wo.k === 'cyclone' && wo.sev > 0.4) return FL.cancel(G, ac, r, 'ciclón en ' + o, true);
     const condM = 1 + Math.max(0, 78 - ac.cond) / 11 + (E.F.overdue(G, ac) ? 1.5 : 0);
-    if (U.chance(0.0011 * condM * E.X.modMult(G, 'incident', { type: ac.type }))) {
+    if (U.chance(0.0007 * condM * E.X.modMult(G, 'incident', { type: ac.type }))) {
       const days = U.randi(1, 3);
       const cost = E.AC[ac.type].price * 1e6 * U.rand(0.0008, 0.003) * G.econ.cpi;
       E.X.cash(G, -cost, 'maint');

@@ -4,7 +4,7 @@ E.SCENARIOS = [
   { id: 'charter72', n: 'Charter regional', era: '1972', y: 1972, m: 2, tone: '#c8773a',
     sub: 'Empezá con dos Fokker F27 usados y una licencia doméstica.',
     desc: 'Es 1972. El jet fuel cuesta centavos, las tarifas están reguladas y los 747 recién empiezan a volar. Fundás una pequeña compañía charter con dos turbohélices de segunda mano. Se viene la crisis del petróleo: elegí bien tus aviones.',
-    cash: 14e6, model: 'legacy', homePick: a => a.size <= 4,
+    cash: 18e6, model: 'legacy', homePick: a => a.size <= 4,
     fleet: [{ t: 'F27', n: 2, age: [5, 9], cond: [62, 75], own: 'own' }],
     research: [], morale: 72,
     goals: [
@@ -26,9 +26,9 @@ E.SCENARIOS = [
   { id: 'bankrupt89', n: 'Al borde de la quiebra', era: '1989', y: 1989, m: 4, tone: '#9c3d3d',
     sub: 'Hiperinflación, deudas y una flota vieja. Salvá la compañía.',
     desc: 'Mayo de 1989. La inflación supera el 30% mensual, la compañía de bandera arrastra deudas enormes, la flota es vieja y los gremios están en pie de guerra. Te nombran presidente: tenés que indexar precios y salarios, renovar la flota y volver a dar ganancias.',
-    cash: 6e6, model: 'legacy', homePick: a => a.region === 'SA' && a.size >= 4, homeDefault: 'EZE',
+    cash: 12e6, model: 'legacy', homePick: a => a.region === 'SA' && a.size >= 4, homeDefault: 'EZE',
     fleet: [{ t: 'B722', n: 3, age: [14, 17], cond: [48, 60], own: 'own' }, { t: 'B732', n: 4, age: [12, 16], cond: [50, 62], own: 'own' }, { t: 'B742', n: 1, age: [11, 13], cond: [52, 60], own: 'own' }, { t: 'F28', n: 2, age: [14, 17], cond: [48, 58], own: 'own' }],
-    research: ['lic_reg', 'lic_int', 'crs'], morale: 32, inflation: 0.14, loans: [{ amt: 160e6, rate: 0.16, months: 120 }], autoRoutes: 7,
+    research: ['lic_reg', 'lic_int', 'crs'], morale: 32, inflation: 0.14, loans: [{ amt: 110e6, rate: 0.08, months: 144 }], autoRoutes: 7, settings: { indexPrices: false },
     goals: [
       { t: 'Patrimonio neto positivo', f: G => E.X.equity(G) > 0 ? 1 : Math.max(0, 1 + E.X.equity(G) / (200e6 * G.econ.cpi)) },
       { t: 'Reputación de 50 o más', f: G => G.rep.overall / 50 },

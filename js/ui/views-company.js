@@ -80,7 +80,9 @@
   const fFuel = (G) => {
     const fh = G.econ.fuelHist || [];
     const price = G.econ.fuel * G.econ.cpi;
-    const monthlyKg = (G.fin.hist.length ? (G.fin.hist[G.fin.hist.length - 1].cost.fuel || 0) : 0) / Math.max(0.01, price);
+    const day = Math.max(1, U.date(G.t).getUTCDate() - 1);
+    const fuelMo = G.fin.hist.length ? (G.fin.hist[G.fin.hist.length - 1].cost.fuel || 0) : (G.fin.cur.cost.fuel || 0) * 30 / day;
+    const monthlyKg = fuelMo / Math.max(0.01, price);
     let h = `<div class="grid3 r2">${UI.stat('Precio actual', U.n2(price) + ' $/kg', U.n2(price * 3.04) + ' $/galón')}${UI.stat('Consumo mensual', U.n0(monthlyKg / 1000) + ' t')}${UI.stat('Cubierto', U.pct(Math.min(0.9, G.fin.hedges.reduce((s, x) => s + x.pct, 0))))}</div>`;
     if (fh.length > 2) h += `<div class="card tight mt12">${UI.lineChart([{ vals: fh, color: 'var(--accent)', fill: true }], { fmt: v => U.n2(v) + ' $' })}<div class="tiny muted">Últimas ${fh.length} semanas</div></div>`;
     h += UI.sec('Precio por región');
@@ -101,7 +103,8 @@
   E.A.hedgeM = (d) => { E.UIS.hedge.months = +d.v; UI.render(); };
   E.A.buyHedge = () => {
     const G = E.G, H = E.UIS.hedge; const price = G.econ.fuel * G.econ.cpi;
-    const monthlyKg = (G.fin.hist.length ? (G.fin.hist[G.fin.hist.length - 1].cost.fuel || 0) : 0) / price;
+    const day = Math.max(1, U.date(G.t).getUTCDate() - 1);
+    const monthlyKg = (G.fin.hist.length ? (G.fin.hist[G.fin.hist.length - 1].cost.fuel || 0) : (G.fin.cur.cost.fuel || 0) * 30 / day) / price;
     const fee = monthlyKg * H.pct * H.months * price * 0.012;
     if (G.cash < fee) return UI.toast('Caja insuficiente', 'bad');
     E.X.cash(G, -fee, 'fuel');

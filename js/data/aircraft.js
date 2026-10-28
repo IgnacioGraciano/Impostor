@@ -155,6 +155,7 @@ E.AIRCRAFT.forEach(t => {
   t.turn = { rp: 0.4, rj: 0.5, nb: 0.65, wb: 1.2, jb: 1.6, ss: 1.4, fr: 1.5 }[t.cat]; // horas de rotación mínima
   t.cabinCrew = (seats => seats < 20 ? 0 : Math.ceil(seats / 50))(t.seats);
   t.twin = t.engines === 2;
+  if (t.cat === 'rp') t.maint = Math.round(t.maint * 0.8);
 });
 
 /* -------- Productos de cabina (unidades de espacio por asiento, puntaje de confort, año) -------- */

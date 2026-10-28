@@ -7,7 +7,7 @@ E.D = (() => {
   const GROWTH = { 1960: 0.06, 1970: 0.13, 1975: 0.17, 1980: 0.23, 1985: 0.28, 1990: 0.37, 1995: 0.44, 2000: 0.56, 2005: 0.66, 2010: 0.77, 2015: 0.9, 2019: 1.0, 2030: 1.38, 2045: 2.0 };
   D.growth = yf => U.table(GROWTH, yf);
   // multiplicador de tarifas reales por época (tarifas reguladas = caras)
-  const FAREERA = { 1960: 1.9, 1972: 1.75, 1978: 1.55, 1985: 1.35, 1992: 1.2, 2000: 1.1, 2008: 1.02, 2015: 1.0, 2040: 0.98 };
+  const FAREERA = { 1960: 2.05, 1972: 1.9, 1978: 1.66, 1985: 1.42, 1992: 1.24, 2000: 1.12, 2008: 1.03, 2015: 1.0, 2040: 0.98 };
   D.fareEra = yf => U.table(FAREERA, yf);
 
   D.distF = d => {
@@ -199,7 +199,7 @@ E.D = (() => {
     const out = { y: [0, 0], p: [0, 0], j: [0, 0], f: [0, 0], c: [0, 0], mkt: { y: 0, p: 0, j: 0, f: 0 }, share: { y: 0, p: 0, j: 0, f: 0 }, spill: 0 };
     [0, 1].forEach(dir => {
       const O = dir === 0 ? A : B, X = dir === 0 ? B : A;
-      const base = D.base(O, X, yf) * D.season(O, X, mo) * G.econ.cycle * E.X.modMult(G, 'demand', { iata: O.iata, cc: O.cc, region: O.region }) * E.X.modMult(G, 'demand', { iata: X.iata, cc: X.cc, region: X.region }, false, true);
+      const base = D.base(O, X, yf) * D.season(O, X, mo) * G.econ.cycle * (1 - Math.min(0.35, G.econ.infl * 2.5)) * E.X.modMult(G, 'demand', { iata: O.iata, cc: O.cc, region: O.region }) * E.X.modMult(G, 'demand', { iata: X.iata, cc: X.cc, region: X.region }, false, true);
       const closed = E.X.isClosed(G, O.iata) || E.X.isClosed(G, X.iata);
       const conn = 1 + 0.012 * (hubConn(O.iata) + hubConn(X.iata)) * U.clamp(r.d / 3000, 0.3, 1.4);
       const aw = 0.55 + 0.9 * (G.mkt.aw[O.region] || 0) / 100;
@@ -284,12 +284,15 @@ E.D = (() => {
       m.comps = m.comps.filter(c => c.cap > mktDay * 0.1 || c.sh > 0.05);
       m.comps.forEach(c => { if (myShare > 0.7 && Math.random() < 0.01) c.sh *= 0.8; });
       m.comps = m.comps.filter(c => c.sh > 0.04);
+      // precios altos con ocupación alta atraen capacidad rival
+      const pIdx = (r.price.y / Math.max(1, dem.ref.y));
+      if (pIdx > 1.08 && dem.lfAll > 0.8) m.comps.forEach(c => { c.sh = Math.min(0.6, (c.sh || 0.1) * (1 + (pIdx - 1) * 0.08)); });
       // entrada de nuevos competidores en rutas muy rentables (ocupación alta y precios altos)
-      if (dem.lfAll > 0.9 && m.comps.length < 4 && Math.random() < 0.015 * (E.DIFFS[G.diff] || E.DIFFS.normal).k) {
+      if ((dem.lfAll > 0.9 || (pIdx > 1.15 && dem.lfAll > 0.78)) && m.comps.length < 5 && Math.random() < (0.015 + Math.max(0, pIdx - 1) * 0.05) * (E.DIFFS[G.diff] || E.DIFFS.normal).k) {
         const A = E.AP[r.a];
         const pool = NAMES[A.region] || NAMES.EU;
         const name = pool.find(n => !m.comps.some(c => c.name === n)) || pool[0];
-        m.comps.push({ name, cap: mktDay * 0.25, price: 0.85, q: 0.45 + Math.random() * 0.2, lf: 0.7 });
+        m.comps.push({ name, cap: mktDay * 0.5, sh: 0.25, price: 0.85, q: 0.45 + Math.random() * 0.2, lf: 0.7 });
         E.X.inbox(G, 'Nuevo competidor', `${name} empieza a volar ${E.AP[r.a].city}–${E.AP[r.b].city}, atraída por tus altas ocupaciones.`, 'warn');
       }
       if (myShare > 0.6 && m.comps.length === 0 && mktDay > 300 && Math.random() < 0.02) {

@@ -126,7 +126,10 @@
     const est = E.priceEst(G, r, k, v);
     UI.$('#pv-' + k).textContent = U.moneyFull(v);
     UI.$('#pe-' + k).textContent = `Ocup. ${U.pct(est.lf)} · ${U.money(est.rev)}/sem`;
-    if (type === 'change') { r.price[k] = v; r.auto = false; E.D.routeDemand(G, r); UI.render(); }
+    if (type === 'change') {
+      if (v > r.price[k] && E.X.modMult(G, 'pricefreeze', {}, true)) { UI.toast('Tarifas congeladas por el gobierno: no podés subirlas', 'bad'); UI.render(); return; }
+      r.price[k] = v; r.auto = false; E.D.routeDemand(G, r); UI.render();
+    }
   };
   E.IN.cargoP = (el, type) => { const r = E.G.routes.find(x => x.id === el.dataset.id); el.parentElement.querySelector('.val').textContent = U.pct(+el.value); if (type === 'change') { r.cargoP = +el.value; E.D.routeDemand(E.G, r); } };
   E.IN.autoPrice = (el) => { const r = E.G.routes.find(x => x.id === el.dataset.id); r.auto = el.checked; };

@@ -154,7 +154,8 @@ E.EC = (() => {
 
   /* ----- Cierre mensual ----- */
   EC.monthly = (G) => {
-    // préstamos
+    // préstamos (los indexados en dólares acompañan la inflación)
+    G.fin.loans.forEach(L => { if (L.idx && L.cpi) { const k = G.econ.cpi / L.cpi; L.amt *= k; L.pay *= k; L.orig *= k; L.cpi = G.econ.cpi; } });
     G.fin.loans.forEach(L => {
       const int = L.amt * L.rate / 12;
       const princ = Math.min(L.amt, Math.max(0, L.pay - int));

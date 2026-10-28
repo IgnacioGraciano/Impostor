@@ -18,6 +18,10 @@
     if (!G.research.cur && G.fleet.length > 1) out.push({ k: '', i: 'flask', t: 'Investigación detenida', s: 'Elegí un nuevo proyecto de I+D.', a: 'root', v: 'research' });
     const infl = G.econ.infl > 0 && E.STAFF_KEYS.some(k => G.econ.cpi / G.staff[k].cpiPaid > 1.1);
     if (infl) out.push({ k: 'warn', i: 'dollar', t: 'Salarios atrasados por la inflación', s: 'Indexalos para evitar huelgas.', a: 'root', v: 'staff' });
+    if (G.econ.infl > 0 && !G.settings.indexPrices && G.routes.length) {
+      const lag = U.sum(G.routes, r => r.dem ? r.price.y / Math.max(1, r.dem.ref.y) : 1) / G.routes.length;
+      if (lag < 0.85 && !E.X.modMult(G, 'pricefreeze', {}, true)) out.push({ k: 'bad', i: 'tag', t: `Tus tarifas quedaron al ${U.pct(lag)} de la referencia`, s: 'La inflación las licuó. Tocá para indexarlas ya.', a: 'indexPricesNow' });
+    }
     G.routes.forEach(r => { if (E.FL.routeFreq(G, r) === 0 && G.t - r.since > 24 * 3) out.push({ k: '', i: 'route', t: `Ruta ${r.a}–${r.b} sin aviones`, s: 'Asigná un avión o eliminala.', a: 'openRoute', v: r.id }); });
     if (G.ev.queue.length) out.unshift({ k: 'acc', i: 'bell', t: 'Hay decisiones pendientes', s: 'Resolvé los eventos en espera.', a: 'showEvent' });
     return out.slice(0, 8);
@@ -112,6 +116,7 @@
     }
   };
   E.A.showEvent = () => E.MOD.nextEvent(true);
+  E.A.indexPricesNow = () => { const G = E.G; G.routes.forEach(r => { const d = r.dem || E.D.routeDemand(G, r); ['y', 'p', 'j', 'f'].forEach(k => { if (r.price[k] < d.ref[k]) r.price[k] = Math.round(d.ref[k] * (r.price[k] / Math.max(1, d.ref[k]) < 0.85 ? 1 : r.price[k] / d.ref[k])); }); E.D.routeDemand(G, r); }); G.econ.cpiPrices = G.econ.cpi; UI.toast('Tarifas actualizadas a la referencia', 'good', 'tag'); UI.render(); };
 
   /* ---------- tutorial ---------- */
   E.tutorialCard = (G) => {

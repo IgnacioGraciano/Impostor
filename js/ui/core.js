@@ -168,7 +168,7 @@ E.UI = (() => {
     bg.className = 'modal-bg';
     bg.innerHTML = `<div class="modal ${o.cls || ''}" role="dialog" aria-modal="true">${html}</div>`;
     UI.$('#modals').appendChild(bg);
-    const m = { el: bg, box: bg.firstChild, close: () => { bg.remove(); UI.modals = UI.modals.filter(x => x !== m); if (o.onClose) o.onClose(); E.bus.emit('modal:close'); } };
+    const m = { el: bg, box: bg.firstChild, sticky: !!o.sticky, close: () => { bg.remove(); UI.modals = UI.modals.filter(x => x !== m); if (o.onClose) o.onClose(); E.bus.emit('modal:close'); } };
     if (!o.sticky) bg.addEventListener('click', e => { if (e.target === bg) m.close(); });
     UI.modals.push(m);
     return m;
@@ -276,7 +276,7 @@ E.UI = (() => {
   document.addEventListener('input', onInput);
   document.addEventListener('change', onInput);
   document.addEventListener('keydown', ev => {
-    if (ev.key === 'Escape') { if (UI.modals.length && !UI.topModal().el.querySelector('.cockpit')) UI.topModal().close(); else if (UI.isOpen()) UI.back(); }
+    if (ev.key === 'Escape') { if (UI.modals.length) { if (!UI.topModal().sticky) UI.topModal().close(); } else if (UI.isOpen()) UI.back(); }
     if (ev.target.tagName === 'INPUT') return;
     if (ev.key === ' ' && E.G) { ev.preventDefault(); E.A.speed({ v: E.G.speed ? 0 : (E.UI.lastSpeed || 1) }); }
     if (['1', '2', '3', '4'].includes(ev.key) && E.G) E.A.speed({ v: +ev.key });
